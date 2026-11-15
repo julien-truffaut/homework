@@ -1,7 +1,7 @@
 // Screens and wiring. Rules live in sprint.ts, the history format in log.ts.
 import './style.css';
 import { APP_VERSION, BACKUP_REMINDER_DAYS, SCHOOL, SPRINT } from './config';
-import { isCorrect, makeQuestions, tablesFor, timeLimitSeconds, type Question } from './sprint';
+import { isCorrect, makeQuestions, tablesFor, timeLimitSeconds, type Difficulty, type Level, type Question } from './sprint';
 import {
   lastBackupAt,
   stamp,
@@ -60,8 +60,9 @@ function setPref(key: string, value: string): void {
 let mode: Mode = pref('mode', 'essai') === 'reel' ? 'reel' : 'essai';
 let size: number = Number(pref('size', '25'));
 if (!(SPRINT.sizes as readonly number[]).includes(size)) size = SPRINT.sizes[0];
+let difficulty: Difficulty = pref('difficulty', 'facile') === 'difficile' ? 'difficile' : 'facile';
 let withTwelve = pref('twelve', 'no') === 'yes';
-let showTrials = false;
+let historyTab: Mode = 'reel';
 
 // ---------- helpers ----------
 
@@ -71,7 +72,10 @@ function fmtDuration(sec: number): string {
 function fmtDate(iso: string): string {
   return new Date(iso).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
 }
-function q2s(q: Question): string {
+const DIFFICULTY_LABEL: Record<Difficulty, string> = { facile: 'Facile', difficile: 'Difficile' };
+const LEVEL_LABEL: Record<Level, string> = { facile: 'F', moyen: 'M', difficile: 'D' };
+
+function q2s(q: Pick<Question, 'a' | 'b'>): string {
   return `${q.a} × ${q.b}`;
 }
 function on(sel: string, fn: () => void): void {
@@ -110,6 +114,10 @@ function showHome(): void {
         <button class="choice ${mode === 'reel' ? 'on' : ''}" data-mode="reel">Pour de vrai</button>
       </div>
       <div class="row">${sizes}</div>
+      <div class="row">
+        <button class="choice ${difficulty === 'facile' ? 'on' : ''}" data-difficulty="facile">Facile</button>
+        <button class="choice ${difficulty === 'difficile' ? 'on' : ''}" data-difficulty="difficile">Difficile 🔥</button>
+      </div>
       <button class="go" id="start">C'est parti !</button>
       <footer>
         <button class="link" id="history">Historique</button>
@@ -132,6 +140,13 @@ function showHome(): void {
       showHome();
     }),
   );
+  app.querySelectorAll<HTMLElement>('[data-difficulty]').forEach((el) =>
+    el.addEventListener('click', () => {
+      difficulty = el.dataset.difficulty === 'difficile' ? 'difficile' : 'facile';
+      setPref('difficulty', difficulty);
+      showHome();
+    }),
+  );
   on('#start', startRun);
   on('#history', showHistory);
   on('#backup', () => void saveBackup());
@@ -146,6 +161,7 @@ function showHome(): void {
 type Live = {
   runId: string;
   mode: Mode;
+  difficulty: Difficulty;
   questions: Question[];
   index: number;
   typed: string;
@@ -160,7 +176,7 @@ let live: Live | null = null;
 
 function startRun(): void {
   const tables = tablesFor(withTwelve);
-  const questions = makeQuestions(Math.random, size, tables);
+  const questions = makeQuestions(Math.random, size, tables, difficulty);
   const limit = timeLimitSeconds(size);
   const runId = uuid();
   record({
@@ -168,6 +184,7 @@ function startRun(): void {
     runId,
     skill: { id: SPRINT.skillId, version: SPRINT.skillVersion },
     mode,
+    difficulty,
     size,
     timeLimitSec: limit,
     tables,
@@ -177,6 +194,7 @@ function startRun(): void {
   live = {
     runId,
     mode,
+    difficulty,
     questions,
     index: 0,
     typed: '',
@@ -219,7 +237,7 @@ function renderRun(): void {
     <main class="run">
       <header>
         <button class="link" id="stop">Arrêter</button>
-        <span class="tag">${l.mode === 'essai' ? 'Essai' : 'Pour de vrai'}</span>
+        <span class="tag">${l.mode === 'essai' ? 'Essai' : 'Pour de vrai'} · ${DIFFICULTY_LABEL[l.difficulty]}</span>
         <span class="progress">${l.index + 1} / ${l.questions.length}</span>
         <span id="clock" class="clock"></span>
       </header>
@@ -316,31 +334,36 @@ function showEnd(l: Live, reason: FinishReason): void {
 // ---------- history ----------
 
 function showHistory(): void {
-  const runs = summarizeRuns(entries).filter((r) => showTrials || r.mode === 'reel');
+  const runs = summarizeRuns(entries).filter((r) => r.mode === historyTab);
   const rows = runs
     .map(
       (r) => `<li><button class="runrow" data-run="${r.runId}">
         <span>${fmtDate(r.startedAt)}</span>
-        <span class="tag ${r.mode}">${r.mode === 'essai' ? 'Essai' : 'Pour de vrai'}</span>
+        <span class="tag ${r.mode}">${DIFFICULTY_LABEL[r.difficulty]}</span>
         <span class="runscore">${r.score} / ${r.size}</span>
         <span class="small">${r.finish ? '' : 'interrompu'}</span>
       </button></li>`,
     )
     .join('');
+  const tab = (m: Mode, label: string) =>
+    `<button class="tab ${historyTab === m ? 'on' : ''}" data-tab="${m}">${label}</button>`;
   app.innerHTML = `
     <main class="history">
       <header>
         <button class="link" id="home">← Accueil</button>
         <h2>Historique</h2>
-        <label class="link"><input type="checkbox" id="trials" ${showTrials ? 'checked' : ''}> essais</label>
+        <span></span>
       </header>
+      <div class="tabs">${tab('reel', 'Pour de vrai')}${tab('essai', 'Essais')}</div>
       ${runs.length ? `<ul class="runs">${rows}</ul>` : '<p class="note">Rien pour le moment.</p>'}
     </main>`;
   on('#home', showHome);
-  app.querySelector<HTMLInputElement>('#trials')!.addEventListener('change', (ev) => {
-    showTrials = (ev.target as HTMLInputElement).checked;
-    showHistory();
-  });
+  app.querySelectorAll<HTMLElement>('[data-tab]').forEach((el) =>
+    el.addEventListener('click', () => {
+      historyTab = el.dataset.tab === 'essai' ? 'essai' : 'reel';
+      showHistory();
+    }),
+  );
   app.querySelectorAll<HTMLElement>('[data-run]').forEach((el) =>
     el.addEventListener('click', () => {
       const run = summarizeRuns(entries).find((r) => r.runId === el.dataset.run);
@@ -354,7 +377,7 @@ function showRun(r: Run): void {
     .map((a) => {
       const res = a.answer === null ? '<span class="skipped">passé</span>' : a.correct ? '✓' : '✗';
       return `<tr class="${a.correct ? 'good' : 'bad'}">
-        <td>${a.index + 1}</td><td>${q2s(a.question)}</td>
+        <td>${a.index + 1}</td><td>${q2s(a.question)}</td><td class="lvl">${a.question.level ? LEVEL_LABEL[a.question.level] : ''}</td>
         <td>${a.answer ?? ''}</td><td>${res}</td><td>${(a.ms / 1000).toFixed(1)} s</td></tr>`;
     })
     .join('');
@@ -366,10 +389,10 @@ function showRun(r: Run): void {
       <header>
         <button class="link" id="back">← Historique</button>
         <h2>${r.score} / ${r.size}</h2>
-        <span class="tag ${r.mode}">${r.mode === 'essai' ? 'Essai' : 'Pour de vrai'}</span>
+        <span class="tag ${r.mode}">${r.mode === 'essai' ? 'Essai' : 'Pour de vrai'} · ${DIFFICULTY_LABEL[r.difficulty]}</span>
       </header>
       <p class="note">${fmtDate(r.startedAt)} · ${fmtDuration(r.timeLimitSec)} · ${end}</p>
-      <table class="answers"><thead><tr><th>#</th><th>Calcul</th><th>Réponse</th><th></th><th>Temps</th></tr></thead>
+      <table class="answers"><thead><tr><th>#</th><th>Calcul</th><th>Niveau</th><th>Réponse</th><th></th><th>Temps</th></tr></thead>
       <tbody>${rows}</tbody></table>
     </main>`;
   on('#back', showHistory);

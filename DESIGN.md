@@ -43,17 +43,24 @@ Each skill has a permanent ID that is never reused. If a skill changes later (di
 
 The app uses French notation: decimal comma, × for multiplication.
 
-## First exercise: multiplication sprint (built, v0.1)
+## First exercise: multiplication sprint (built, v0.2)
 
 Modelled on the school sheet "100 calculs en 4 minutes": as many correct multiplications as possible before time runs out.
 
 - **Size:** 25, 50 or 100 questions, at the school pace of 2.4 s per question: 1 min, 2 min, 4 min.
 - **Questions:** one factor from the tables 0 to 10 (×12 as an option), the other from 0 to 10, random order, never the same question twice in a row.
+- **Difficulty switch: Facile / Difficile.** Each fact has a general level:
+  - *Facile*: at least one factor is 0, 1, 2, 5 or 10 (2 × 3, 5 × 7)
+  - *Moyen*: uses 3 or 4 and isn't facile (3 × 4, 4 × 7)
+  - *Difficile*: both factors are 6, 7, 8 or 9 (8 × 7, 6 × 9); ×12 facts are difficile unless facile
+
+  **Facile** picks every fact equally, so mostly easy ones. **Difficile** leans toward hard facts but still mixes: 50% difficile, 30% moyen, 20% facile. The score is unchanged: 1 point per correct answer, whatever the level. Each question's level is recorded.
+- **Later: his own difficulty**, learned from his recorded times and mistakes (his 3 mistakes on the school sheet were all ×0, which counts as "facile" in general).
 - **Run:** one question at a time, number keypad + OK, **Passer** to skip, countdown, **Arrêter** to stop.
 - **Score:** correct answers only. Wrong and skipped answers are worth 0. Judged on the score alone.
 - **Essai:** ✓ or ✗ with the correct answer after each question, and the score is shown but not counted. **Pour de vrai:** no feedback until the score at the end.
 - **Recorded quietly:** every question, his answer (or skipped), right/wrong, time taken. Not shown during the run.
-- **History screen:** real runs with date and score, a toggle to also show trials, tap a run to see every answer.
+- **History screen:** two tabs, *Pour de vrai* and *Essais*, each listing runs with date, difficulty and score. Tap a run to see every answer with its level.
 
 ## Exercises are written out in full
 

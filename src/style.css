@@ -104,3 +104,8 @@ footer { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; mar
   .question { font-size: 52px; }
   .runrow { grid-template-columns: 1fr auto; }
 }
+
+.tabs { display: flex; background: var(--soft); border-radius: 14px; padding: 4px; gap: 4px; }
+.tab { background: none; border-radius: 10px; padding: 10px 24px; font-size: 20px; }
+.tab.on { background: white; font-weight: 700; }
+.lvl { opacity: 0.6; }

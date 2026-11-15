@@ -8,7 +8,7 @@ function at(minute: number, e: NewEntry): Entry {
 }
 
 function run(runId: string, minute: number, mode: 'essai' | 'reel', answers: (number | null)[], finished = true): Entry[] {
-  const questions = answers.map(() => ({ a: 3, b: 4 }));
+  const questions = answers.map(() => ({ a: 3, b: 4, level: 'moyen' as const }));
   const out: Entry[] = [
     at(minute, {
       type: 'sprint_started',
@@ -56,6 +56,11 @@ describe('summarizeRuns', () => {
     expect(runs[1]).toMatchObject({ mode: 'reel', score: 1, size: 3 });
     expect(runs[1]!.answers.map((a) => a.answer)).toEqual([12, 11, null]);
     expect(runs[0]).toMatchObject({ mode: 'essai', score: 2 });
+  });
+
+  it("treats runs recorded before the difficulty switch as 'facile'", () => {
+    const [r] = summarizeRuns(run('r1', 1, 'reel', [12]));
+    expect(r!.difficulty).toBe('facile');
   });
 
   it('keeps an interrupted run (no finish entry) and scores what was answered', () => {

@@ -1,8 +1,15 @@
 // Multiplication sprint rules. Pure: no DOM, randomness is injected.
 import { SPRINT } from './config';
 
-export type Question = { a: number; b: number };
+/** How hard a single fact is, in general (not for him personally). */
+export type Level = 'facile' | 'moyen' | 'difficile';
+/** The Facile / Difficile switch on the start screen. */
+export type Difficulty = 'facile' | 'difficile';
+
+export type Question = { a: number; b: number; level: Level };
 export type Rng = () => number;
+
+const LEVELS: readonly Level[] = ['facile', 'moyen', 'difficile'];
 
 export function timeLimitSeconds(size: number): number {
   return Math.round(size * SPRINT.secondsPerQuestion);
@@ -12,8 +19,47 @@ export function tablesFor(withTwelve: boolean): number[] {
   return withTwelve ? [...SPRINT.baseTables, SPRINT.extraTable] : [...SPRINT.baseTables];
 }
 
-function randInt(rng: Rng, maxInclusive: number): number {
-  return Math.min(maxInclusive, Math.floor(rng() * (maxInclusive + 1)));
+export function levelOf(a: number, b: number): Level {
+  const easy: readonly number[] = SPRINT.easyFactors;
+  const hard: readonly number[] = SPRINT.hardFactors;
+  if (easy.includes(a) || easy.includes(b)) return 'facile';
+  if (a === SPRINT.extraTable || b === SPRINT.extraTable) return 'difficile';
+  if (hard.includes(a) && hard.includes(b)) return 'difficile';
+  return 'moyen';
+}
+
+/** Every fact with one factor from `tables` and the other from 0..maxFactor, in both orders, no duplicates. */
+export function allFacts(tables: readonly number[]): Question[] {
+  const seen = new Set<string>();
+  const out: Question[] = [];
+  const add = (a: number, b: number) => {
+    const key = `${a}x${b}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ a, b, level: levelOf(a, b) });
+  };
+  for (const t of tables) {
+    for (let f = 0; f <= SPRINT.maxFactor; f++) {
+      add(t, f);
+      add(f, t);
+    }
+  }
+  return out;
+}
+
+function pickFrom<T>(rng: Rng, xs: readonly T[]): T {
+  return xs[Math.min(xs.length - 1, Math.floor(rng() * xs.length))]!;
+}
+
+function pickLevel(rng: Rng, groups: Record<Level, Question[]>): Level {
+  const avail = LEVELS.filter((l) => groups[l].length > 0);
+  const total = avail.reduce((s, l) => s + SPRINT.difficileMix[l], 0);
+  let r = rng() * total;
+  for (const l of avail) {
+    r -= SPRINT.difficileMix[l];
+    if (r < 0) return l;
+  }
+  return avail[avail.length - 1]!;
 }
 
 function same(x: Question, y: Question): boolean {
@@ -21,26 +67,32 @@ function same(x: Question, y: Question): boolean {
 }
 
 /**
- * `size` random questions: one factor from `tables`, the other from 0..maxFactor,
- * in a random order. Avoids asking the same question twice in a row.
+ * `size` random questions from the chosen tables.
+ * Facile: every fact equally likely. Difficile: weighted toward harder facts (SPRINT.difficileMix).
+ * Avoids asking the same question twice in a row.
  */
-export function makeQuestions(rng: Rng, size: number, tables: readonly number[]): Question[] {
+export function makeQuestions(
+  rng: Rng,
+  size: number,
+  tables: readonly number[],
+  difficulty: Difficulty = 'facile',
+): Question[] {
+  const facts = allFacts(tables);
+  const groups: Record<Level, Question[]> = { facile: [], moyen: [], difficile: [] };
+  for (const f of facts) groups[f.level].push(f);
+  const pick = (): Question =>
+    difficulty === 'facile' ? pickFrom(rng, facts) : pickFrom(rng, groups[pickLevel(rng, groups)]);
+
   const out: Question[] = [];
   while (out.length < size) {
-    let q: Question;
-    let tries = 0;
-    do {
-      const t = tables[randInt(rng, tables.length - 1)]!;
-      const f = randInt(rng, SPRINT.maxFactor);
-      q = rng() < 0.5 ? { a: t, b: f } : { a: f, b: t };
-      tries++;
-    } while (out.length > 0 && same(out[out.length - 1]!, q) && tries < 10);
-    out.push(q);
+    let q = pick();
+    for (let tries = 1; out.length > 0 && same(out[out.length - 1]!, q) && tries < 10; tries++) q = pick();
+    out.push({ ...q });
   }
   return out;
 }
 
 /** A skipped question (null) is never correct. */
-export function isCorrect(q: Question, answer: number | null): boolean {
+export function isCorrect(q: Pick<Question, 'a' | 'b'>, answer: number | null): boolean {
   return answer !== null && answer === q.a * q.b;
 }

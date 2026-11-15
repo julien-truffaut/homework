@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isCorrect, makeQuestions, tablesFor, timeLimitSeconds } from './sprint';
+import { allFacts, isCorrect, levelOf, makeQuestions, tablesFor, timeLimitSeconds, type Level } from './sprint';
 
 function seeded(seed: number): () => number {
   // mulberry32: deterministic so the tests never flake
@@ -53,6 +53,64 @@ describe('makeQuestions', () => {
     const qs = makeQuestions(seeded(3), 2000, tablesFor(false));
     expect(qs.some((q) => q.b === 0 && q.a !== 0)).toBe(true);
     expect(qs.some((q) => q.a === 0 && q.b !== 0)).toBe(true);
+  });
+});
+
+describe('levelOf', () => {
+  it('matches the agreed grid', () => {
+    const grid = [
+      'FFFFFFFFFFF',
+      'FFFFFFFFFFF',
+      'FFFFFFFFFFF',
+      'FFFMMFMMMMF',
+      'FFFMMFMMMMF',
+      'FFFFFFFFFFF',
+      'FFFMMFDDDDF',
+      'FFFMMFDDDDF',
+      'FFFMMFDDDDF',
+      'FFFMMFDDDDF',
+      'FFFFFFFFFFF',
+    ];
+    const code: Record<Level, string> = { facile: 'F', moyen: 'M', difficile: 'D' };
+    for (let a = 0; a <= 10; a++)
+      expect([...Array(11).keys()].map((b) => code[levelOf(a, b)]).join(''), `row ${a}`).toBe(grid[a]);
+  });
+
+  it('counts ×12 as difficile except with 0, 1, 2, 5, 10', () => {
+    expect(levelOf(12, 7)).toBe('difficile');
+    expect(levelOf(3, 12)).toBe('difficile');
+    expect(levelOf(12, 5)).toBe('facile');
+  });
+});
+
+describe('allFacts', () => {
+  it('has every fact of tables 0–10 exactly once', () => {
+    expect(allFacts(tablesFor(false))).toHaveLength(121);
+  });
+});
+
+describe('difficulty', () => {
+  const share = (qs: { level: Level }[], l: Level) => qs.filter((q) => q.level === l).length / qs.length;
+
+  it('facile is mostly easy facts', () => {
+    const qs = makeQuestions(seeded(4), 5000, tablesFor(false), 'facile');
+    expect(share(qs, 'facile')).toBeGreaterThan(0.6);
+  });
+
+  it('difficile is weighted toward hard facts but still mixes in the others', () => {
+    const qs = makeQuestions(seeded(5), 5000, tablesFor(false), 'difficile');
+    expect(share(qs, 'difficile')).toBeGreaterThan(0.45);
+    expect(share(qs, 'moyen')).toBeGreaterThan(0.25);
+    expect(share(qs, 'facile')).toBeGreaterThan(0.15);
+  });
+
+  it('works when a level has no facts (only easy tables chosen)', () => {
+    const qs = makeQuestions(seeded(6), 100, [2, 5], 'difficile');
+    expect(qs.every((q) => q.level === 'facile')).toBe(true);
+  });
+
+  it('records the level on every question', () => {
+    for (const q of makeQuestions(seeded(7), 50, tablesFor(true), 'difficile')) expect(q.level).toBe(levelOf(q.a, q.b));
   });
 });
 

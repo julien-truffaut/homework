@@ -1,6 +1,6 @@
 // The history log: a list of entries that only grows. Never edit or delete an entry.
 // This format is the long-term archive (see DESIGN.md "History"): add fields, never rename or remove them.
-import type { Question } from './sprint';
+import type { Difficulty, Question } from './sprint';
 
 export type Mode = 'essai' | 'reel';
 
@@ -20,6 +20,8 @@ export type SprintStarted = Base & {
   runId: string;
   skill: { id: string; version: number };
   mode: Mode;
+  /** Added in v0.2. Missing = 'facile'. */
+  difficulty?: Difficulty;
   size: number;
   timeLimitSec: number;
   tables: number[];
@@ -66,6 +68,7 @@ export type Run = {
   runId: string;
   startedAt: string;
   mode: Mode;
+  difficulty: Difficulty;
   size: number;
   timeLimitSec: number;
   answers: SprintAnswered[];
@@ -83,6 +86,7 @@ export function summarizeRuns(entries: readonly Entry[]): Run[] {
         runId: e.runId,
         startedAt: e.at,
         mode: e.mode,
+        difficulty: e.difficulty ?? 'facile',
         size: e.size,
         timeLimitSec: e.timeLimitSec,
         answers: [],
