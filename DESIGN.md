@@ -16,10 +16,11 @@ Everything he does is kept permanently, so that years from now we can look back 
 ## Principles
 
 1. **History is permanent.** Every exercise and every answer is stored and never changed or deleted.
-2. **The process matters more than the final answer.** Every step is checked and recorded. A right final answer with a wrong step is not a success, and a slip at the very end after good steps is not a failure.
-3. **Code makes and checks the exercises, not AI.** Maths answers must be checked exactly, every time.
-4. **How he answers is separate from what the exercise is.** Keypad today, other input methods later, without changing the exercises.
-5. **Start simple.** Add things when we need them.
+2. **For written calculations, the process matters more than the final answer.** Every step is checked and recorded. A right final answer with a wrong step is not a success, and a slip at the very end after good steps is not a failure. **Speed drills are the exception:** they are judged only on the final score.
+3. **Every exercise can be done as a trial (*essai*).** A trial is recorded and marked as a trial, but it is never scored as a result and never counts toward progress or points. He can try without being judged.
+4. **Code makes and checks the exercises, not AI.** Maths answers must be checked exactly, every time.
+5. **How he answers is separate from what the exercise is.** Keypad today, other input methods later, without changing the exercises.
+6. **Start simple.** Add things when we need them.
 
 ## Skills
 
@@ -41,6 +42,18 @@ Each skill has:
 Each skill has a permanent ID that is never reused. If a skill changes later (different difficulty levels, a different method), it gets a new version, so old results still mean what they meant when they were recorded.
 
 The app uses French notation: decimal comma, × for multiplication.
+
+## First exercise: multiplication sprint (built, v0.1)
+
+Modelled on the school sheet "100 calculs en 4 minutes": as many correct multiplications as possible before time runs out.
+
+- **Size:** 25, 50 or 100 questions, at the school pace of 2.4 s per question: 1 min, 2 min, 4 min.
+- **Questions:** one factor from the tables 0 to 10 (×12 as an option), the other from 0 to 10, random order, never the same question twice in a row.
+- **Run:** one question at a time, number keypad + OK, **Passer** to skip, countdown, **Arrêter** to stop.
+- **Score:** correct answers only. Wrong and skipped answers are worth 0. Judged on the score alone.
+- **Essai:** ✓ or ✗ with the correct answer after each question, and the score is shown but not counted. **Pour de vrai:** no feedback until the score at the end.
+- **Recorded quietly:** every question, his answer (or skipped), right/wrong, time taken. Not shown during the run.
+- **History screen:** real runs with date and score, a toggle to also show trials, tap a run to see every answer.
 
 ## Exercises are written out in full
 
@@ -167,8 +180,11 @@ To be defined.
 
 ## Tech direction
 
-- A web app added to the iPad home screen, built with Vite + TypeScript, like Gaby's Castle.
-- Exercises and checkers are plain code with tests.
+- A static web app (Vite + TypeScript, no framework), like Gaby's Castle. No server: logic and data stay on the iPad.
+- Exercises, checkers and the history format are plain code with tests.
+- Hosted on GitHub Pages at https://julien-truffaut.github.io/homework/ (public repo; it holds no personal data). Every push to `main` runs the tests and redeploys.
+- On the iPad: Safari → Share → "Add to Home Screen". Opens full screen and works offline. Updates arrive on the next launch.
+- **The address must never change:** the iPad keeps the data under the address the app was opened from. Moving to another address means backup then restore (restore not built yet).
 
 ## Open decisions
 
