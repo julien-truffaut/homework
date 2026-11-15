@@ -12,10 +12,16 @@ function seeded(seed: number): () => number {
 }
 
 describe('timeLimitSeconds', () => {
-  it('keeps the school pace of 2.4 s per question', () => {
-    expect(timeLimitSeconds(25)).toBe(60);
-    expect(timeLimitSeconds(50)).toBe(120);
-    expect(timeLimitSeconds(100)).toBe(240);
+  it('keeps the school pace of 2.4 s per question for real runs', () => {
+    expect(timeLimitSeconds(25, 'reel')).toBe(60);
+    expect(timeLimitSeconds(50, 'reel')).toBe(120);
+    expect(timeLimitSeconds(100, 'reel')).toBe(240);
+  });
+
+  it('gives 50% more time in essai', () => {
+    expect(timeLimitSeconds(25, 'essai')).toBe(90);
+    expect(timeLimitSeconds(50, 'essai')).toBe(180);
+    expect(timeLimitSeconds(100, 'essai')).toBe(360);
   });
 });
 

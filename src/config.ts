@@ -12,6 +12,8 @@ export const SPRINT = {
   sizes: [25, 50, 100] as const,
   /** Same pace as the school sheet: 100 questions in 4 minutes. */
   secondsPerQuestion: 2.4,
+  /** Essai gets more time: 1.5 = +50%. */
+  essaiTimeFactor: 1.5,
   baseTables: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   extraTable: 12,
   /** The other factor goes from 0 to this. */

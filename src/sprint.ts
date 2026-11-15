@@ -1,5 +1,6 @@
 // Multiplication sprint rules. Pure: no DOM, randomness is injected.
 import { SPRINT } from './config';
+import type { Mode } from './log';
 
 /** How hard a single fact is, in general (not for him personally). */
 export type Level = 'tres_facile' | 'facile' | 'moyen' | 'difficile';
@@ -11,8 +12,10 @@ export type Rng = () => number;
 
 const LEVELS: readonly Level[] = ['tres_facile', 'facile', 'moyen', 'difficile'];
 
-export function timeLimitSeconds(size: number): number {
-  return Math.round(size * SPRINT.secondsPerQuestion);
+/** School pace (2.4 s per question) for real runs; essai gets SPRINT.essaiTimeFactor more. */
+export function timeLimitSeconds(size: number, mode: Mode): number {
+  const factor = mode === 'essai' ? SPRINT.essaiTimeFactor : 1;
+  return Math.round(size * SPRINT.secondsPerQuestion * factor);
 }
 
 export function tablesFor(withTwelve: boolean): number[] {

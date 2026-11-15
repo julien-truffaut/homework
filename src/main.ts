@@ -67,7 +67,10 @@ let historyTab: Mode = 'reel';
 // ---------- helpers ----------
 
 function fmtDuration(sec: number): string {
-  return sec < 120 && sec % 60 !== 0 ? `${sec} s` : `${sec / 60} min`;
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  if (m === 0) return `${s} s`;
+  return s === 0 ? `${m} min` : `${m} min ${String(s).padStart(2, '0')}`;
 }
 function fmtDate(iso: string): string {
   return new Date(iso).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
@@ -102,7 +105,7 @@ function showHome(): void {
   const sizes = SPRINT.sizes
     .map(
       (s) => `<button class="choice ${s === size ? 'on' : ''}" data-size="${s}">
-        <span class="big">${s}</span><span class="small">${fmtDuration(timeLimitSeconds(s))}</span></button>`,
+        <span class="big">${s}</span><span class="small">${fmtDuration(timeLimitSeconds(s, mode))}</span></button>`,
     )
     .join('');
   app.innerHTML = `
@@ -177,7 +180,7 @@ let live: Live | null = null;
 function startRun(): void {
   const tables = tablesFor(withTwelve);
   const questions = makeQuestions(Math.random, size, tables, difficulty);
-  const limit = timeLimitSeconds(size);
+  const limit = timeLimitSeconds(size, mode);
   const runId = uuid();
   record({
     type: 'sprint_started',

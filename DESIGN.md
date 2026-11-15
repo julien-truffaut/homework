@@ -43,11 +43,11 @@ Each skill has a permanent ID that is never reused. If a skill changes later (di
 
 The app uses French notation: decimal comma, × for multiplication.
 
-## First exercise: multiplication sprint (built, v0.3)
+## First exercise: multiplication sprint (built, v0.4)
 
 Modelled on the school sheet "100 calculs en 4 minutes": as many correct multiplications as possible before time runs out.
 
-- **Size:** 25, 50 or 100 questions, at the school pace of 2.4 s per question: 1 min, 2 min, 4 min.
+- **Size:** 25, 50 or 100 questions, at the school pace of 2.4 s per question: 1 min, 2 min, 4 min. **Essai gets 50% more time:** 1 min 30, 3 min, 6 min.
 - **Questions:** one factor from the tables 0 to 10 (×12 as an option), the other from 0 to 10, random order, never the same question twice in a row.
 - **Difficulty switch: Facile / Difficile.** Each fact has a general level:
   - *Très facile*: ×0 or ×10 (3 × 0, 10 × 7)

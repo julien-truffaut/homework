@@ -2,8 +2,8 @@
 
 ## Status (2026-11-15)
 
-**v0.3: multiplication sprint**, live at https://julien-truffaut.github.io/homework/
-- Essai / Pour de vrai, 25 · 50 · 100 questions (1 · 2 · 4 min), tables 0–10 (+12 option)
+**v0.4: multiplication sprint**, live at https://julien-truffaut.github.io/homework/
+- Essai / Pour de vrai, 25 · 50 · 100 questions (1 · 2 · 4 min; essai +50%), tables 0–10 (+12 option)
 - Facile / Difficile switch with set proportions per level (très facile ×0/×10 kept rare); level recorded per question
 - History screen with Pour de vrai / Essais tabs, per-answer detail
 - Every answer recorded on the iPad; Sauvegarder → JSONL backup; 7-day reminder
@@ -22,4 +22,5 @@
 - 2026-11-15 Hosting: GitHub Pages, public repo, address julien-truffaut.github.io/homework (must not change).
 - 2026-11-15 Difficulty: fixed general levels (F/M/D grid in DESIGN.md) + Facile/Difficile switch; personal difficulty from his data later.
 - 2026-11-15 ×0 and ×10 split out as "très facile" and kept rare (10% Facile, 5% Difficile).
+- 2026-11-15 Essai gets 50% more time than Pour de vrai.
 - Deferred until v1 works: points/rewards, session length.
