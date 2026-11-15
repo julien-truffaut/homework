@@ -2,14 +2,14 @@
 import { SPRINT } from './config';
 
 /** How hard a single fact is, in general (not for him personally). */
-export type Level = 'facile' | 'moyen' | 'difficile';
+export type Level = 'tres_facile' | 'facile' | 'moyen' | 'difficile';
 /** The Facile / Difficile switch on the start screen. */
 export type Difficulty = 'facile' | 'difficile';
 
 export type Question = { a: number; b: number; level: Level };
 export type Rng = () => number;
 
-const LEVELS: readonly Level[] = ['facile', 'moyen', 'difficile'];
+const LEVELS: readonly Level[] = ['tres_facile', 'facile', 'moyen', 'difficile'];
 
 export function timeLimitSeconds(size: number): number {
   return Math.round(size * SPRINT.secondsPerQuestion);
@@ -20,8 +20,10 @@ export function tablesFor(withTwelve: boolean): number[] {
 }
 
 export function levelOf(a: number, b: number): Level {
+  const veryEasy: readonly number[] = SPRINT.veryEasyFactors;
   const easy: readonly number[] = SPRINT.easyFactors;
   const hard: readonly number[] = SPRINT.hardFactors;
+  if (veryEasy.includes(a) || veryEasy.includes(b)) return 'tres_facile';
   if (easy.includes(a) || easy.includes(b)) return 'facile';
   if (a === SPRINT.extraTable || b === SPRINT.extraTable) return 'difficile';
   if (hard.includes(a) && hard.includes(b)) return 'difficile';
@@ -51,12 +53,13 @@ function pickFrom<T>(rng: Rng, xs: readonly T[]): T {
   return xs[Math.min(xs.length - 1, Math.floor(rng() * xs.length))]!;
 }
 
-function pickLevel(rng: Rng, groups: Record<Level, Question[]>): Level {
+function pickLevel(rng: Rng, groups: Record<Level, Question[]>, difficulty: Difficulty): Level {
+  const mix = SPRINT.mix[difficulty];
   const avail = LEVELS.filter((l) => groups[l].length > 0);
-  const total = avail.reduce((s, l) => s + SPRINT.difficileMix[l], 0);
+  const total = avail.reduce((s, l) => s + mix[l], 0);
   let r = rng() * total;
   for (const l of avail) {
-    r -= SPRINT.difficileMix[l];
+    r -= mix[l];
     if (r < 0) return l;
   }
   return avail[avail.length - 1]!;
@@ -68,7 +71,7 @@ function same(x: Question, y: Question): boolean {
 
 /**
  * `size` random questions from the chosen tables.
- * Facile: every fact equally likely. Difficile: weighted toward harder facts (SPRINT.difficileMix).
+ * The level of each question is drawn from SPRINT.mix[difficulty], then a fact of that level.
  * Avoids asking the same question twice in a row.
  */
 export function makeQuestions(
@@ -78,10 +81,9 @@ export function makeQuestions(
   difficulty: Difficulty = 'facile',
 ): Question[] {
   const facts = allFacts(tables);
-  const groups: Record<Level, Question[]> = { facile: [], moyen: [], difficile: [] };
+  const groups: Record<Level, Question[]> = { tres_facile: [], facile: [], moyen: [], difficile: [] };
   for (const f of facts) groups[f.level].push(f);
-  const pick = (): Question =>
-    difficulty === 'facile' ? pickFrom(rng, facts) : pickFrom(rng, groups[pickLevel(rng, groups)]);
+  const pick = (): Question => pickFrom(rng, groups[pickLevel(rng, groups, difficulty)]);
 
   const out: Question[] = [];
   while (out.length < size) {

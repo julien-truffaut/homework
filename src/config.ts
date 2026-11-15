@@ -17,12 +17,17 @@ export const SPRINT = {
   /** The other factor goes from 0 to this. */
   maxFactor: 10,
   maxAnswerDigits: 3,
-  /** A fact is "facile" if either factor is one of these. */
-  easyFactors: [0, 1, 2, 5, 10],
-  /** A fact is "difficile" if both factors are among these (or one of them is 12 and it isn't facile). */
+  /** A fact is "très facile" if either factor is one of these. */
+  veryEasyFactors: [0, 10],
+  /** Otherwise "facile" if either factor is one of these. */
+  easyFactors: [1, 2, 5],
+  /** "difficile" if both factors are among these (or one of them is 12 and it isn't easier). */
   hardFactors: [6, 7, 8, 9],
-  /** "Difficile" mode: share of questions per level. "Facile" mode picks every fact equally (mostly easy ones). */
-  difficileMix: { facile: 0.2, moyen: 0.3, difficile: 0.5 },
+  /** Share of questions per level, for each position of the Facile / Difficile switch. */
+  mix: {
+    facile: { tres_facile: 0.1, facile: 0.55, moyen: 0.2, difficile: 0.15 },
+    difficile: { tres_facile: 0.05, facile: 0.15, moyen: 0.3, difficile: 0.5 },
+  },
 } as const;
 
 /** Show the backup reminder when the last backup is older than this. */

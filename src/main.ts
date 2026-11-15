@@ -73,7 +73,7 @@ function fmtDate(iso: string): string {
   return new Date(iso).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
 }
 const DIFFICULTY_LABEL: Record<Difficulty, string> = { facile: 'Facile', difficile: 'Difficile' };
-const LEVEL_LABEL: Record<Level, string> = { facile: 'F', moyen: 'M', difficile: 'D' };
+const LEVEL_LABEL: Record<Level, string> = { tres_facile: 'TF', facile: 'F', moyen: 'M', difficile: 'D' };
 
 function q2s(q: Pick<Question, 'a' | 'b'>): string {
   return `${q.a} × ${q.b}`;
