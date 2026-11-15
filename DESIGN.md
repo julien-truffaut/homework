@@ -138,12 +138,23 @@ The goal is to open the app in 2030 and see how he did on 312 × 56 in CM1.
 - **A log that only grows.** Each thing that happens is one entry: exercise shown, answer submitted, hint shown, solution shown, exercise finished. Each entry has a date, time and duration. Nothing is ever edited or deleted. A correction is a new entry.
 - **Exercises are stored complete.** The full question and expected solution are saved, not regenerated later, because the exercise-making code will change over the years.
 - **Context on every entry:** skill ID and version, app version, and school year and class (e.g. CM1 2026-27).
-- **Kept off the iPad.** Safari can wipe a web app's local data, and the iPad will be replaced at some point. The app works offline but syncs to a backend, and the backend copy is the one that counts. There is also a regular export to a plain file that can be read without the app.
+- **The backup file is the archive.** One plain text file, one entry per line, readable without the app. This format is what has to last for years. Storage can change around it.
 - **Looking back:**
   - one skill over time
   - which steps he keeps getting wrong (e.g. the retenue in the tens column, lining up the second line of a multiplication)
   - the same skill across school years
   - replaying any exercise exactly as he did it, box by box
+
+## Storage
+
+**v1: iPad only, plus a backup file.**
+- The log is stored on the iPad (in the browser's local database). The parent screen is on the iPad too.
+- A **"Save backup"** button writes the whole log to one file in iCloud Drive.
+- The app reminds you when the last backup is more than a week old.
+
+**Why this keeps the door open:** every entry has its own ID and is never changed, so syncing only means "send the entries the other side doesn't have yet". A sync server can be added later without changing the app's data. Moving from one storage to another means copying the entries across.
+
+**Later, when results are needed on the Mac or backups should happen on their own:** add a small sync server, either at home (a Mac, NAS or Raspberry Pi with a single-file SQLite database) or a hosted service. The backup file stays the long-term archive in both cases.
 
 ## Points and rewards
 
@@ -163,7 +174,7 @@ To be defined.
 
 1. Points and rewards: what earns points, what they buy, and who approves spending. *(After the first version works.)*
 2. Session length and how often. *(After the first version works.)*
-3. Where the backend runs, and how often the export happens.
+3. Sync server, once we need one: at home or hosted.
 4. When to add Pencil handwriting.
 
 ## Glossary
