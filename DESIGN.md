@@ -161,8 +161,8 @@ To be defined.
 
 ## Open decisions
 
-1. Points and rewards: what earns points, what they buy, and who approves spending.
-2. Session length and how often.
+1. Points and rewards: what earns points, what they buy, and who approves spending. *(After the first version works.)*
+2. Session length and how often. *(After the first version works.)*
 3. Where the backend runs, and how often the export happens.
 4. When to add Pencil handwriting.
 
